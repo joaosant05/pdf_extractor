@@ -1,17 +1,18 @@
 import fitz  # PyMuPDF
 import os
+import hashlib
 
-def extract_main_image_from_pdf(pdf_path, output_folder, start_page, num_pages, min_width=100, min_height=100):
-    # Open the PDF file
+def extract_main_image_from_pdf(pdf_path, output_folder, start_page, num_pages, min_width=5625, min_height=150):
     pdf = fitz.open(pdf_path)
+    saved_hashes = set()  # Conjunto para armazenar hashes das imagens salvas
     
-    # Loop through the specified range of pages
+    # Loop para ler páginas
     for page_num in range(start_page, start_page + num_pages):
         page = pdf.load_page(page_num)
         images = page.get_images(full=True)
         
         main_image = None
-        max_area = 0  # To keep track of the largest image
+        max_area = 0  # Prioriza a maior imagem
         
         for img_index, img in enumerate(images):
             xref = img[0]
@@ -22,32 +23,36 @@ def extract_main_image_from_pdf(pdf_path, output_folder, start_page, num_pages, 
             image_height = base_image["height"]
             image_area = image_width * image_height
             
-            # Check if the image dimensions meet the minimum size criteria
             if image_width >= min_width and image_height >= min_height:
-                # Update main_image if this image is the largest found so far
                 if image_area > max_area:
                     main_image = (image_bytes, image_ext, page_num, img_index)
                     max_area = image_area
         
         if main_image:
             image_bytes, image_ext, page_num, img_index = main_image
-            image_filename = f"{output_folder}/page{page_num+1}_img{img_index+1}.{image_ext}"
+            # Calcula o hash SHA-256 da imagem
+            image_hash = hashlib.sha256(image_bytes).hexdigest()
             
-            with open(image_filename, "wb") as image_file:
-                image_file.write(image_bytes)
-            print(f"Main image on page {page_num+1} saved as {image_filename}")
+            # Verifica se o hash da imagem já está no conjunto
+            if image_hash not in saved_hashes:
+                image_filename = f"{output_folder}/page{page_num+1}_img{img_index+1}.{image_ext}"
+                with open(image_filename, "wb") as image_file:
+                    image_file.write(image_bytes)
+                print(f"Main image on page {page_num+1} saved as {image_filename}")
+                # Adiciona o hash da imagem ao conjunto
+                saved_hashes.add(image_hash)
+            else:
+                print(f"Duplicate image on page {page_num+1} skipped.")
     
     pdf.close()
 
-# Get input from the user
-pdf_path = "pdf_teste.pdf"
+# Exemplo de uso
+pdf_path = "pdf_teste2.pdf"
 output_folder = "images"
 start_page = int(input("Enter the start page (index starting from 0): "))
 num_pages = int(input("Enter the number of pages to extract: "))
 
-# Create the output folder if it does not exist
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
 
-# Call the function with user inputs
 extract_main_image_from_pdf(pdf_path, output_folder, start_page, num_pages)
