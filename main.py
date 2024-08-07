@@ -1,10 +1,10 @@
-import fitz  # PyMuPDF
+import fitz
 import os
 import hashlib
 
 def extract_main_image_from_pdf(pdf_path, output_folder, start_page, num_pages, min_width=5625, min_height=150):
     pdf = fitz.open(pdf_path)
-    saved_hashes = set()  # Conjunto para armazenar hashes das imagens salvas
+    saved_hashes = set()
     
     # Loop para ler páginas
     for page_num in range(start_page, start_page + num_pages):
@@ -33,20 +33,18 @@ def extract_main_image_from_pdf(pdf_path, output_folder, start_page, num_pages, 
             # Calcula o hash SHA-256 da imagem
             image_hash = hashlib.sha256(image_bytes).hexdigest()
             
-            # Verifica se o hash da imagem já está no conjunto
             if image_hash not in saved_hashes:
                 image_filename = f"{output_folder}/page{page_num+1}_img{img_index+1}.{image_ext}"
                 with open(image_filename, "wb") as image_file:
                     image_file.write(image_bytes)
                 print(f"Main image on page {page_num+1} saved as {image_filename}")
-                # Adiciona o hash da imagem ao conjunto
+
                 saved_hashes.add(image_hash)
             else:
                 print(f"Duplicate image on page {page_num+1} skipped.")
     
     pdf.close()
 
-# Exemplo de uso
 pdf_path = "pdf_teste2.pdf"
 output_folder = "images"
 start_page = int(input("Enter the start page (index starting from 0): "))
