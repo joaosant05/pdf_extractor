@@ -38,7 +38,7 @@ def extract_main_image_from_pdf(pdf_path, output_folder, start_page, num_pages):
     saved_hashes = set()  # Conjunto para armazenar hashes das imagens salvas
     
     # Loop para ler páginas
-    for page_num in range(start_page, start_page + num_pages):
+    for page_num in range(start_page, (start_page + 1) + num_pages):
         page = pdf.load_page(page_num)
         images = page.get_images(full=True)
         
