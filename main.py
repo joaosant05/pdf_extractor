@@ -2,7 +2,7 @@ import fitz
 import os
 import hashlib
 
-def extract_main_image_from_pdf(pdf_path, output_folder, start_page, num_pages, min_width=5625, min_height=150):
+def extract_main_image_from_pdf(pdf_path, output_folder, start_page, num_pages, min_width=0, min_height=0):
     pdf = fitz.open(pdf_path)
     saved_hashes = set()
     
@@ -30,7 +30,7 @@ def extract_main_image_from_pdf(pdf_path, output_folder, start_page, num_pages, 
         
         if main_image:
             image_bytes, image_ext, page_num, img_index = main_image
-            # Calcula o hash SHA-256 da imagem
+
             image_hash = hashlib.sha256(image_bytes).hexdigest()
             
             if image_hash not in saved_hashes:
@@ -45,7 +45,7 @@ def extract_main_image_from_pdf(pdf_path, output_folder, start_page, num_pages, 
     
     pdf.close()
 
-pdf_path = "pdf_teste2.pdf"
+pdf_path = "teste_2.pdf"
 output_folder = "images"
 start_page = int(input("Enter the start page (index starting from 0): "))
 num_pages = int(input("Enter the number of pages to extract: "))
